@@ -26,6 +26,7 @@ function setup() {
 
   // Listen for updates to usernames
   socket.on('username', function (message) {
+
     let id = message.id;
     let username = message.username;
 
@@ -39,25 +40,30 @@ function setup() {
 
   // Receive message from server
   socket.on('message', function (message) {
+    /*
+    {
+      id: 'asdflkajwefnvaeoij324134',
+      data: {
+        naptime: 120,
+        keycode: ['a','b']
+      }
+    }
+    */
+
     //console.log(message);
     let id = message.id;
-    
+
 
     // New user
     if (!(id in users)) {
       createNewUser(id);
     }
-    //Update naptime
-    users[id].naptime=message.data.naptime
 
-    console.log(users[id].naptime)
+    //Update naptime
+    users[id].naptime = message.data.naptime;
 
     //update keycode
-    users[id].keycode=message.data.keycode
-
-    console.log(users[id].keycode)
-
-    
+    users[id].keycode = message.data.keycode;
   });
 
   // Remove disconnected users
@@ -65,9 +71,6 @@ function setup() {
     delete users[id];
   });
 }
-
-
-
 
 //pressed and up
 let pressed = {}
@@ -85,8 +88,6 @@ window.onkeyup = function(e){
   socket.emit('data',{naptime:duration, keycode: e.which});
 }
 
-
-
 // Draw background
 // Draw positions for each user
 // Draw name for each user
@@ -102,45 +103,9 @@ function draw() {
      textSize(80*naptime);
      fill(0);
      text(user.keycode, 500, 500);
-     // for(r = 0; r <100; r++){
-     //  ellipse(windowWidth/2, windowHeight/2, naptime+r, naptime+r);
-     // }
-     
-
-   // user.naptime-=0.01
     }
   }
-
-
-
-
-
-
-// //sent naptime 
-// let keys = [];
-// //document.body.innerHTML = 'Am I sleeping? (Use your face to press keyboard....)'
-// window.addEventListener('keydown',
-//     function(e){
-//         keys[e.keyCode] = true;
-//         let numPressedKeys = keys.reduce(function(a, b) { return a + b; }, 0);
-//        // document.body.innerHTML = "Num of pressed keys :" + numPressedKeys;
-//         socket.emit('data',{ naptime:numPressedKeys});
-  
-//     },
-// false);
-// window.addEventListener('keyup',
-//     function(e){
-//         keys[e.keyCode] = false;       
-//     },
-// false);
-
-// Send mouse position only when mouse moves
-// function mouseMoved() {
-//   socket.emit('data', {
-//     x: mouseX,
-//     y: mouseY
-//   });
-// }
+}
 
 // Send username as it changes
 function usernameChanged() {
