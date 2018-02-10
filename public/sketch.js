@@ -100,10 +100,9 @@ function draw() {
     console.log(user);
 
     let naptime = user.naptime;
-     textSize(80*naptime);
-     fill(0);
-     text(user.keycode, 500, 500);
-    }
+    textSize(80*naptime);
+    fill(0);
+    text(user.keycode, 500, 500);
   }
 }
 
