@@ -7,8 +7,9 @@ let users = {};
 function createNewUser(id) {
   users[id] = {
     username: '',
-    naptime: 0,
     keycode: '',
+    startTime: 0,
+    endTime: 0
   }
 }
 
@@ -38,18 +39,7 @@ function setup() {
     users[id].username = username;
   });
 
-  // Receive message from server
-  socket.on('user_updated', function (message) {
-    /*
-    {
-      id: 'asdflkajwefnvaeoij324134',
-      data: {
-        naptime: 120,
-        keycode: ['a','b']
-      }
-    }
-    */
-
+  socket.on('user_keydown', function(message) {
     let id = message.id;
 
     // New user
@@ -57,11 +47,22 @@ function setup() {
       createNewUser(id);
     }
 
-    // Update naptime
-    users[id].naptime = message.data.naptime;
+    users[id].keycode = message.keycode;
+    users[id].startTime = message.startTime;
+    users[id].endTime = message.endTime;
+  });
 
-    // Update keycode
-    users[id].keycode = message.data.keycode;
+  // Receive message from server
+  socket.on('user_keyup', function (message) {
+    let id = message.id;
+
+    // New user
+    if (!(id in users)) {
+      createNewUser(id);
+    }
+
+    users[id].keycode = message.keycode;
+    users[id].endTime = message.endTime;
   });
 
   // Remove disconnected users
@@ -76,7 +77,14 @@ let pressed = {}
 window.onkeydown = function(e){
   if(pressed[e.which]) return;
   pressed[e.which] = e.timeStamp;
-  // socket.emit('keycode', {keycode: e.which});
+
+  let payload = {
+    keycode: e.which,
+    startTime: Date.now(),
+    endTime: null
+  }
+
+  socket.emit('keydown_message', payload);
 }
 
 window.onkeyup = function(e){
@@ -84,10 +92,12 @@ window.onkeyup = function(e){
   let duration = (e.timeStamp - pressed[e.which])/1000;
   pressed[e.which] = 0;
 
-  socket.emit('keyup_message', {
-    naptime: duration,
-    keycode: e.which
-  });
+  let payload = {
+    keycode: e.which,
+    endTime: Date.now()
+  }
+
+  socket.emit('keyup_message', payload);
 }
 
 // Draw background
@@ -99,12 +109,25 @@ function draw() {
   for (let id in users) {
     let user = users[id];
     let username = user.username;
-    console.log(user);
 
-    let naptime = user.naptime;
-    textSize(80*naptime);
-    fill(0);
-    text(user.keycode, 500, 500);
+    // if you haven't ended
+    if (!user.endTime) {
+      fill(0);
+
+      // keep growing fontsize
+      let growthRate = 32;
+      let duration = (Date.now() - user.startTime) / 1000;
+      let size = duration * growthRate + 16;
+      textSize(size);
+
+      // turn keycode to actual letter
+      // print the letter
+      text(user.keycode, 500, 500);
+    } else {
+      fill(0);
+      textSize(32);
+      text(user.keycode, 500, 500);
+    }
   }
 }
 
