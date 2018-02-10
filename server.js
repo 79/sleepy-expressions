@@ -14,11 +14,11 @@ let io = require('socket.io').listen(server);
 
 // Listen for individual clients to connect
 io.sockets.on('connection',
-	// Callback function on connection
+  // Callback function on connection
   // Comes back with a socket object
-	function (socket) {
+  function (socket) {
 
-		console.log("We have a new client: " + socket.id);
+    console.log("We have a new client: " + socket.id);
 
     // Listen for username
     socket.on('username', function(username){
@@ -33,40 +33,20 @@ io.sockets.on('connection',
     })
 
     // Listen for data from this client
-    socket.on('data', function(data) {
-      // Data can be numbers, strings, objects
-			//console.log("Received: 'data' " + data);
-
+    socket.on('keyup_message', function(data) {
       let message = {
         id: socket.id,
-        data : data,
+        data: data
       }
-     
-      // Send it to all of the clients, including this one
-			io.sockets.emit('message', message);
-			console.log(message)
-		});
+
+      // Broadcast to all clients
+      io.sockets.emit('user_updated', message);
+    });
 
     // Listen for this client to disconnect
     // Tell everyone client has disconnected
     socket.on('disconnect', function() {
       io.sockets.emit('disconnected', socket.id);
     });
-	}
+  }
 );
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

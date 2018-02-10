@@ -39,7 +39,7 @@ function setup() {
   });
 
   // Receive message from server
-  socket.on('message', function (message) {
+  socket.on('user_updated', function (message) {
     /*
     {
       id: 'asdflkajwefnvaeoij324134',
@@ -50,19 +50,17 @@ function setup() {
     }
     */
 
-    //console.log(message);
     let id = message.id;
-
 
     // New user
     if (!(id in users)) {
       createNewUser(id);
     }
 
-    //Update naptime
+    // Update naptime
     users[id].naptime = message.data.naptime;
 
-    //update keycode
+    // Update keycode
     users[id].keycode = message.data.keycode;
   });
 
@@ -85,7 +83,11 @@ window.onkeyup = function(e){
   if(!pressed[e.which])return;
   let duration = (e.timeStamp - pressed[e.which])/1000;
   pressed[e.which] = 0;
-  socket.emit('data',{naptime:duration, keycode: e.which});
+
+  socket.emit('keyup_message', {
+    naptime: duration,
+    keycode: e.which
+  });
 }
 
 // Draw background
