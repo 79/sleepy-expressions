@@ -21,15 +21,15 @@ io.sockets.on('connection',
     console.log("We have a new client: " + socket.id);
 
     // Listen for username
-    socket.on('username', function(username){
+    socket.on('username', function(userUpdates) {
       let message = {
-        id : socket.id,
-        username : username,
+        id: socket.id,
+        username: userUpdates.username,
+        color: userUpdates.color
       }
 
       // Send it to all of the clients, including this one
       io.sockets.emit('username', message);
-      console.log(message)
     })
 
     socket.on('keydown_message', function(data) {

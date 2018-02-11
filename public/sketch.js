@@ -9,7 +9,13 @@ function createNewUser(id) {
     username: '',
     keycode: '',
     startTime: 0,
-    endTime: 0
+    endTime: 0,
+    // give new users a default color
+    color: {
+      r: random(200),
+      g: random(200),
+      b: random(200)
+    }
   }
 }
 
@@ -27,16 +33,18 @@ function setup() {
 
   // Listen for updates to usernames
   socket.on('username', function (message) {
-
     let id = message.id;
     let username = message.username;
+    let color = message.color;
 
     // New user
     if (!(id in users)) {
       createNewUser(id);
     }
+
     // Update username
     users[id].username = username;
+    users[id].color = color;
   });
 
   socket.on('user_keydown', function(message) {
@@ -110,9 +118,10 @@ function draw() {
     let user = users[id];
     let username = user.username;
 
+    fill(user.color.r, user.color.g, user.color.b);
+
     // if you haven't ended
     if (!user.endTime) {
-      fill(0);
 
       // keep growing fontsize
       let growthRate = 32;
@@ -120,11 +129,11 @@ function draw() {
       let size = duration * growthRate + 16;
       textSize(size);
 
+
       // turn keycode to actual letter
       // print the letter
       text(user.keycode, 500, 500);
     } else {
-      fill(0);
       textSize(32);
       text(user.keycode, 500, 500);
     }
@@ -133,5 +142,12 @@ function draw() {
 
 // Send username as it changes
 function usernameChanged() {
-  socket.emit('username', this.value());
+  socket.emit('username', {
+    username: this.value(),
+    color: {
+      r: random(200),
+      g: random(200),
+      b: random(200)
+    }
+  });
 }
