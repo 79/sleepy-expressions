@@ -32,15 +32,28 @@ io.sockets.on('connection',
       console.log(message)
     })
 
+    socket.on('keydown_message', function(data) {
+      let message = {
+        id: socket.id,
+        keycode: data.keycode,
+        startTime: data.startTime,
+        endTime: data.endTime
+      }
+
+      // Broadcast to all clients
+      io.sockets.emit('user_keydown', message);
+    });
+
     // Listen for data from this client
     socket.on('keyup_message', function(data) {
       let message = {
         id: socket.id,
-        data: data
+        keycode: data.keycode,
+        endTime: data.endTime,
       }
 
       // Broadcast to all clients
-      io.sockets.emit('user_updated', message);
+      io.sockets.emit('user_keyup', message);
     });
 
     // Listen for this client to disconnect
