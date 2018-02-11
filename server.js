@@ -37,7 +37,9 @@ io.sockets.on('connection',
         id: socket.id,
         keycode: data.keycode,
         startTime: data.startTime,
-        endTime: data.endTime
+        endTime: data.endTime,
+        xpos: data.xpos,
+        ypos: data.ypos
       }
 
       // Broadcast to all clients

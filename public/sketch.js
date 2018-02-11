@@ -15,7 +15,9 @@ function createNewUser(id) {
       r: random(200),
       g: random(200),
       b: random(200)
-    }
+    },
+    xpos: random(windowWidth),
+    ypos: random(windowHeight)
   }
 }
 
@@ -58,6 +60,8 @@ function setup() {
     users[id].keycode = message.keycode;
     users[id].startTime = message.startTime;
     users[id].endTime = message.endTime;
+    users[id].xpos = message.xpos;
+    users[id].ypos = message.ypos;
   });
 
   // Receive message from server
@@ -89,7 +93,9 @@ window.onkeydown = function(e){
   let payload = {
     keycode: e.which,
     startTime: Date.now(),
-    endTime: null
+    endTime: null,
+    xpos: random(windowWidth),
+    ypos: random(windowHeight)
   }
 
   socket.emit('keydown_message', payload);
@@ -129,13 +135,12 @@ function draw() {
       let size = duration * growthRate + 16;
       textSize(size);
 
-
       // turn keycode to actual letter
       // print the letter
-      text(user.keycode, 500, 500);
+      text(user.keycode, user.xpos, user.ypos);
     } else {
       textSize(32);
-      text(user.keycode, 500, 500);
+      text(user.keycode, user.xpos, user.ypos);
     }
   }
 }
