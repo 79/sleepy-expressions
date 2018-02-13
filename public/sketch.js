@@ -3,6 +3,15 @@ let socket = io();
 // Keep track of users
 let users = {};
 
+
+// The reason why I changed this part is because if we use a total random RGB, 
+// then letter will be different colors in different users' screens.
+// so I tried to find a logic that to make the random color not so random:)
+// I find this function that can turn a string to numbers,
+// which means we can give a not-so-random color to each user based on their ID.
+// a references:
+// (https://stackoverflow.com/questions/3426404/create-a-hexadecimal-colour-based-on-a-string-with-javascript)
+
 function stringToColor(str) {
   let hash = 0;
   for (var i = 0; i < str.length; i++) {
@@ -59,12 +68,14 @@ function setup() {
       createNewUser(id);
     }
 
+   
     users[id].pressed[message.keycode] = {
       startTime: message.startTime,
       endTime: null,
       xpos: message.xpos,
       ypos: message.ypos
     };
+
   });
 
   // Receive message from server
@@ -87,7 +98,10 @@ function setup() {
   });
 }
 
+let isPressed = [];
 window.onkeydown = function(e){
+ if(!isPressed[e.which]){
+  isPressed[e.which]=true;
   let payload = {
     keycode: e.which,
     startTime: Date.now(),
@@ -95,17 +109,21 @@ window.onkeydown = function(e){
     xpos: random(windowWidth),
     ypos: random(windowHeight)
   }
-
+   //console.log(Date.now())
   socket.emit('keydown_message', payload);
 }
 
+}
+
 window.onkeyup = function(e){
+  if(isPressed[e.which]){
+  isPressed[e.which]=false;
   let payload = {
     keycode: e.which,
     endTime: Date.now()
   }
-
   socket.emit('keyup_message', payload);
+}
 }
 
 // Draw background
@@ -122,6 +140,7 @@ function draw() {
 
     // if you haven't ended
     for (let keycode=0; keycode < user.pressed.length; keycode++) {
+    //for(let keyinfo in user.pressed){
       let keyinfo = user.pressed[keycode];
       if (keyinfo) {
         let size = 32;
@@ -131,9 +150,10 @@ function draw() {
           size = duration * growthRate + 16;
         }
         textSize(size);
+
         let keychar = String.fromCharCode(keycode);
-        text(keychar, 500, 500);
-        // text(keychar, keyinfo.xpos, keyinfo.ypos);
+        // text(keychar, 500, 500);
+        text(keychar, keyinfo.xpos, keyinfo.ypos);
         // console.log(keychar, size, keyinfo);
       }
     }
