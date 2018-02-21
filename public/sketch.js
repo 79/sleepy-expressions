@@ -96,6 +96,8 @@ function setup() {
   socket.on('disconnected', function(id){
     delete users[id];
   });
+  //setup osc object
+  setTone();
 }
 
 let isPressed = [];
@@ -132,9 +134,13 @@ window.onkeyup = function(e){
 function draw() {
   background(255);
   // noStroke();
+  
+  var freq = 0;
+
   for (let id in users) {
     let user = users[id];
     let username = user.username;
+    freq = freq+user.keycode*5;
 
     fill(user.color);
 
@@ -163,6 +169,7 @@ function draw() {
       }
     }
   }
+  playTone(freq);
 }
 
 // Send username as it changes
@@ -171,3 +178,18 @@ function usernameChanged() {
     username: this.value()
   });
 }
+
+
+//Make noise as the key pressed
+function setTone(){
+  osc = new p5.Oscillator(); 
+  osc.setType('sine'); 
+  osc.amp(0);
+  osc.start();
+}
+
+function playTone(toneFreq){
+  osc.freq(toneFreq);
+  osc.amp(0.5,0.05); 
+}
+  
