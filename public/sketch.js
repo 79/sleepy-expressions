@@ -68,14 +68,19 @@ function setup() {
       createNewUser(id);
     }
 
-
-    users[id].pressed[message.keycode] = {
+    users[id].pressed.push({
+      keycode: message.keycode,
       startTime: message.startTime,
       endTime: null,
       xpos: message.xpos,
       ypos: message.ypos
-    };
+    });
 
+    // We need to allow repeat keypresses,
+    // but we want to limit total keypresses
+    if (users[id].pressed.length > 200) {
+      users[id].pressed.shift();
+    }
   });
 
   // Receive message from server
@@ -87,8 +92,11 @@ function setup() {
       createNewUser(id);
     }
 
-    if (message.keycode in users[id].pressed) {
-      users[id].pressed[message.keycode].endTime = message.endTime;
+    // Find the latest element of pressed keycode, and update the endTime
+    for (let i = users[id].pressed.length - 1; i >= 0; i--) {
+      if (users[id].pressed[i].keycode === message.keycode) {
+        users[id].pressed[i].endTime = message.endTime;
+      }
     }
   });
 
@@ -157,7 +165,7 @@ function draw() {
         }
         textSize(size);
 
-        let keychar = String.fromCharCode(keycode);
+        let keychar = String.fromCharCode(keyinfo.keycode);
         // text(keychar, 500, 500);
         text(keychar, keyinfo.xpos, keyinfo.ypos);
         push();
