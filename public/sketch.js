@@ -154,6 +154,11 @@ function draw() {
         let keychar = String.fromCharCode(keycode);
         // text(keychar, 500, 500);
         text(keychar, keyinfo.xpos, keyinfo.ypos);
+        push();     
+        fill(0);
+        textSize(14);
+        text(username, keyinfo.xpos, keyinfo.ypos + height/80);
+        pop();
         // console.log(keychar, size, keyinfo);
       }
     }
