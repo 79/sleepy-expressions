@@ -1,7 +1,9 @@
 // Open and connect socket
-let socket = io();
+var socket = io();
 // Keep track of users
-let users = {};
+var users = {};
+// keep track of osc objects
+var osc = {};
 
 
 // The reason why I changed this part is because if we use a total random RGB,
@@ -32,6 +34,9 @@ function createNewUser(id) {
     pressed: [],
     color: stringToColor(id)
   }
+  //create a independent osc as create new user
+  setTone(id);
+  console.log(osc);
 }
 
 function setup() {
@@ -81,6 +86,9 @@ function setup() {
     if (users[id].pressed.length > 200) {
       users[id].pressed.shift();
     }
+
+    //play the last pressed tone with corrospond osc
+    playTone(id, random(20,1000));
   });
 
   // Receive message from server
@@ -98,14 +106,16 @@ function setup() {
         users[id].pressed[i].endTime = message.endTime;
       }
     }
+    //stop tone as key up
+    stopTone(id);
   });
 
   // Remove disconnected users
   socket.on('disconnected', function(id){
     delete users[id];
+    //delete osc object
+    osc.splice(id, 1)
   });
-  //setup osc object
-  setTone();
 }
 
 let isPressed = [];
@@ -143,12 +153,10 @@ function draw() {
   background(255);
   // noStroke();
 
-  var freq = 0;
-
   for (let id in users) {
     let user = users[id];
     let username = user.username;
-    freq = freq+user.keycode*5;
+    //freq = freq+user.keycode*5;
 
     fill(user.color);
 
@@ -176,8 +184,9 @@ function draw() {
         // console.log(keychar, size, keyinfo);
       }
     }
+    //when to trigger playTone
+    //playTone(id,freq);
   }
-  playTone(freq);
 }
 
 // Send username as it changes
@@ -189,14 +198,20 @@ function usernameChanged() {
 
 
 //Make noise as the key pressed
-function setTone(){
-  osc = new p5.Oscillator();
-  osc.setType('sine');
-  osc.amp(0);
-  osc.start();
+function setTone(id){
+  osc[id] = new p5.Oscillator();
+  osc[id].setType('sine');
+  osc[id].amp(0);
+  osc[id].start();
 }
 
-function playTone(toneFreq){
-  osc.freq(toneFreq);
-  osc.amp(0.5,0.05);
+//which key trigger which tone
+function playTone(oscId,tone){
+  osc[oscId].freq(tone);
+  osc[oscId].amp(0.5,0.05);
+}
+
+//stop sound
+function stopTone(oscId){
+  osc[oscId].amp(0);
 }
