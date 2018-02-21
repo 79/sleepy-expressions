@@ -4,7 +4,7 @@ let socket = io();
 let users = {};
 
 
-// The reason why I changed this part is because if we use a total random RGB, 
+// The reason why I changed this part is because if we use a total random RGB,
 // then letter will be different colors in different users' screens.
 // so I tried to find a logic that to make the random color not so random:)
 // I find this function that can turn a string to numbers,
@@ -68,14 +68,19 @@ function setup() {
       createNewUser(id);
     }
 
-   
-    users[id].pressed[message.keycode] = {
+    users[id].pressed.push({
+      keycode: message.keycode,
       startTime: message.startTime,
       endTime: null,
       xpos: message.xpos,
       ypos: message.ypos
-    };
+    });
 
+    // We need to allow repeat keypresses,
+    // but we want to limit total keypresses
+    if (users[id].pressed.length > 200) {
+      users[id].pressed.shift();
+    }
   });
 
   // Receive message from server
@@ -87,8 +92,11 @@ function setup() {
       createNewUser(id);
     }
 
-    if (message.keycode in users[id].pressed) {
-      users[id].pressed[message.keycode].endTime = message.endTime;
+    // Find the latest element of pressed keycode, and update the endTime
+    for (let i = users[id].pressed.length - 1; i >= 0; i--) {
+      if (users[id].pressed[i].keycode === message.keycode) {
+        users[id].pressed[i].endTime = message.endTime;
+      }
     }
   });
 
@@ -108,8 +116,8 @@ window.onkeydown = function(e){
     keycode: e.which,
     startTime: Date.now(),
     endTime: null,
-    xpos: random(windowWidth),
-    ypos: random(windowHeight)
+    xpos: mouseX,
+    ypos: mouseY
   }
    //console.log(Date.now())
   socket.emit('keydown_message', payload);
@@ -134,7 +142,7 @@ window.onkeyup = function(e){
 function draw() {
   background(255);
   // noStroke();
-  
+
   var freq = 0;
 
   for (let id in users) {
@@ -157,10 +165,10 @@ function draw() {
         }
         textSize(size);
 
-        let keychar = String.fromCharCode(keycode);
+        let keychar = String.fromCharCode(keyinfo.keycode);
         // text(keychar, 500, 500);
         text(keychar, keyinfo.xpos, keyinfo.ypos);
-        push();     
+        push();
         fill(0);
         textSize(14);
         text(username, keyinfo.xpos, keyinfo.ypos + height/80);
@@ -182,14 +190,13 @@ function usernameChanged() {
 
 //Make noise as the key pressed
 function setTone(){
-  osc = new p5.Oscillator(); 
-  osc.setType('sine'); 
+  osc = new p5.Oscillator();
+  osc.setType('sine');
   osc.amp(0);
   osc.start();
 }
 
 function playTone(toneFreq){
   osc.freq(toneFreq);
-  osc.amp(0.5,0.05); 
+  osc.amp(0.5,0.05);
 }
-  
